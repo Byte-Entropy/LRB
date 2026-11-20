@@ -39,10 +39,11 @@ void run_StartDefaultTask();
 class UARTDriver;
 namespace Driver {
 extern UARTDriver usart2;
+extern UARTDriver usart3;
 }
 namespace UART {
 constexpr UARTDriver* Debug = &Driver::usart2;
-
+constexpr UARTDriver* FSB   = &Driver::usart3;
 }
 
 /* System Handles

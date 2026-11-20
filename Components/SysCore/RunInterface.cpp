@@ -16,4 +16,8 @@ void run_interface() { run_main(); }
 void cpp_USART2_IRQHandler() {
 		Driver::usart2.HandleIRQ_UART();
 	}
+
+void cpp_USART3_IRQHandler() {
+		Driver::usart3.HandleIRQ_UART();
+	}
 }

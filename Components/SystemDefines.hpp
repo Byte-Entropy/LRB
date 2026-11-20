@@ -53,9 +53,14 @@ constexpr uint8_t TASK_PROFILER_PRIORITY = 2;             // Priority of the pri
 constexpr uint8_t TASK_PROFILER_QUEUE_DEPTH_OBJS = 10;    // Size of the priority task queue
 constexpr uint16_t TASK_PROFILER_STACK_DEPTH_WORDS = 512; // Size of the priority task stack
 
-// CAN TASK
+// CAN TASK (unified comms task: RS485 active, FDCAN stubbed)
 constexpr uint8_t TASK_CAN_PRIORITY = 2;             // Priority of the can task
-constexpr uint8_t TASK_CAN_QUEUE_DEPTH_OBJS = 10;    // Size of the can task queue
-constexpr uint16_t TASK_CAN_STACK_DEPTH_WORDS = 512; // Size of the can task stack
+constexpr uint8_t TASK_CAN_QUEUE_DEPTH_OBJS = 16;    // Size of the can task queue
+constexpr uint16_t TASK_CAN_STACK_DEPTH_WORDS = 768; // Size of the can task stack (handles Protobuf + COBS)
+
+// NAU TASK
+constexpr uint8_t NAU_TASK_RTOS_PRIORITY = 2;        // Priority of Task 2
+constexpr uint8_t NAU_TASK_QUEUE_DEPTH_OBJS = 10;    // Size of Task 2 queue
+constexpr uint16_t NAU_TASK_STACK_DEPTH_WORDS = 512; // Size of Task 2 stack
 
 #endif // CUBE_MAIN_SYSTEM_DEFINES_H
