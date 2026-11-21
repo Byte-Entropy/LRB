@@ -64,7 +64,7 @@ private:
     NAU7802Task(const NAU7802Task&);
     NAU7802Task& operator=(const NAU7802Task&);
 
-    Adafruit_NAU7802 _adc;
+    NAU7802Driver _adc;
 
     bool _enableReading;
     bool _enableLogging;

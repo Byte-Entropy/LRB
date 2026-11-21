@@ -15,10 +15,10 @@ extern I2C_HandleTypeDef hi2c3;
 extern "C" void NAU7802Task_HandleDrdyInterrupt(uint16_t gpioPin);
 
 namespace {
-constexpr unsigned long NAU7802_SAMPLE_PERIOD_MS = 500;
+constexpr unsigned long NAU7802_SAMPLE_PERIOD_MS = 100;
 constexpr unsigned long NAU7802_REINIT_PERIOD_MS = 1000;
 constexpr unsigned long NAU7802_COMMAND_TIMEOUT_MS = 20;
-constexpr float NAU7802_EMA_ALPHA_DEFAULT = 0.1f;
+constexpr float NAU7802_EMA_ALPHA_DEFAULT = 0.5f; // Exp Moving Average alpha value (more == faster change)
 constexpr uint8_t NAU7802_CAL_SAMPLES = 8;
 constexpr float NAU7802_LB_PER_G = 0.00220462262f;
 constexpr int32_t NAU7802_STABILITY_COUNTS = 5000;
@@ -107,7 +107,7 @@ void UpdateEma(float alpha, int32_t raw, float *ema, bool *initialized)
     *ema = (alpha * rawF) + ((1.0f - alpha) * (*ema));
 }
 
-bool ReadStableAverage(Adafruit_NAU7802 &adc, uint8_t samples, int32_t *outRaw,
+bool ReadStableAverage(NAU7802Driver &adc, uint8_t samples, int32_t *outRaw,
                        int32_t *outSpread)
 {
     if (outRaw == nullptr || samples == 0) {
@@ -276,7 +276,7 @@ void NAU7802Task::Run(void * pvParams)
             return false;
         }
 
-        if (!_adc.setGain(NAU7802_GAIN_128)) {
+        if (!_adc.setGain(NAU7802_GAIN_16)) {
             SOAR_PRINT("NAU7802Task - Failed to set gain\n");
             return false;
         }

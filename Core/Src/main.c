@@ -132,7 +132,9 @@ int main(void)
   MX_TIM3_Init();
   MX_FDCAN1_Init();
   /* USER CODE BEGIN 2 */
-
+#if (configGENERATE_RUN_TIME_STATS == 1)
+  MX_TIM3_Init();		// Replace TIM2 with your selected timer
+#endif
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -990,7 +992,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+#if (configGENERATE_RUN_TIME_STATS == 1)
+	void StartStatsTimer(void) {
+		HAL_TIM_Base_Start(&htim3);	// replace htim2 with your selected timer
+	}
 
+	uint32_t GetStatsTimerCount(void) {
+		return __HAL_TIM_GET_COUNTER(&htim3);	// replace htim2 with your selected timer
+	}
+#endif
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */

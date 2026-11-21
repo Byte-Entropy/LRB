@@ -11,6 +11,8 @@
 #include "UARTDriver.hpp"
 #include "CubeTask.hpp"
 #include "CANTask.hpp"
+#include "NAU7802Task.hpp"
+#include "ProfilerTask.hpp"
 
 /* Drivers ------------------------------------------------------------------*/
 namespace Driver
@@ -31,6 +33,11 @@ void run_main()
   CubeTask::Inst().InitTask();
   DebugTask::Inst().InitTask();
   CANBusTask::Inst().InitTask();
+  NAU7802Task::Inst().InitTask();
+
+#if (configGENERATE_RUN_TIME_STATS == 1)
+  ProfilerTask::Inst().InitTask();
+#endif
 
   // Print System Boot Info : Warning, don't queue more than 10 prints before
   // scheduler starts

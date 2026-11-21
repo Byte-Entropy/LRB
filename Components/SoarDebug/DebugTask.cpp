@@ -10,10 +10,13 @@
 #include "Command.hpp"
 #include "CubeUtils.hpp"
 #include <cstring>
+#include "ProfilerTask.hpp"
 
 #include "stm32g4xx_hal.h"
 
 // External Tasks (to send debug commands to)
+#include "NAU7802Task.hpp"
+#include "CANTask.hpp"
 
 
 /* Macros --------------------------------------------------------------------*/
@@ -92,8 +95,79 @@ void DebugTask::Run(void *pvParams)
 void DebugTask::HandleDebugMessage(const char *msg)
 {
 
+  //-- NAU7802 LOAD CELL COMMANDS --
+  if (strcmp(msg, "nau_read") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_READ));
+  }
+  else if (strcmp(msg, "nau_stat") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_STATUS));
+  }
+  else if (strcmp(msg, "nau_drdy") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_DRDY));
+  }
+  else if (strcmp(msg, "nau_on") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_ON));
+  }
+  else if (strcmp(msg, "nau_off") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_OFF));
+  }
+  else if (strcmp(msg, "nau_tog") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_TOGGLE));
+  }
+  else if (strcmp(msg, "nau_log") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_ENABLE_LOG));
+  }
+  else if (strcmp(msg, "nau_nolog") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_DISABLE_LOG));
+  }
+  else if (strcmp(msg, "nau_tare") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_TARE));
+  }
+  else if (strcmp(msg, "nau_c500") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_CAL_500G));
+  }
+  else if (strcmp(msg, "nau_c1000") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_CAL_1000G));
+  }
+  else if (strcmp(msg, "nau_g1") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_SET_GAIN_1X));
+  }
+  else if (strcmp(msg, "nau_g2") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_SET_GAIN_2X));
+  }
+  else if (strcmp(msg, "nau_g4") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_SET_GAIN_4X));
+  }
+  else if (strcmp(msg, "nau_g8") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_SET_GAIN_8X));
+  }
+  else if (strcmp(msg, "nau_g128") == 0)
+  {
+    NAU7802Task::Inst().SendCommand(Command(DATA_COMMAND, NAUTASK_COMMAND_NAU_SET_GAIN_128));
+  }
+  //-- RS485 / COMMS TEST COMMAND --
+  else if (strcmp(msg, "rs485_tx") == 0)
+  {
+    bool ok = CANBusTask::Inst().SendLoadCellGrams(1234);
+    SOAR_PRINT("RS485 test TX %s\n", ok ? "queued" : "FAILED");
+  }
   //-- SYSTEM / CHAR COMMANDS -- (Must be last)
-  if (strcmp(msg, "sysreset") == 0)
+  else if (strcmp(msg, "sysreset") == 0)
   {
     // Reset the system
     SOAR_ASSERT(false, "System reset requested");
@@ -108,6 +182,13 @@ void DebugTask::HandleDebugMessage(const char *msg)
     SOAR_PRINT("Debug Task Runtime  \t: %d ms\n\n",
                TICKS_TO_MS(xTaskGetTickCount()));
   }
+	#if (configGENERATE_RUN_TIME_STATS == 1)  // enable profiling commands if profiling enabled
+	  else if (strcmp(msg, "profile") == 0) {
+		profileSystem = true;
+	  } else if (strcmp(msg, "stop profiling") == 0) {
+		profileSystem = false;
+	  }
+	#endif
   else
   {
     // Single character command, or unknown command
@@ -115,12 +196,25 @@ void DebugTask::HandleDebugMessage(const char *msg)
     {
     case 'h':
       SOAR_PRINT("\n-- DEBUG COMMANDS --\n");
-      SOAR_PRINT("sysinfo  - System information\n");
-      SOAR_PRINT("sysreset - System reset\n");
-      SOAR_PRINT("fs_test  - Run file system tests\n");
-      SOAR_PRINT("fs_log   - Log sample sensor data\n");
-      SOAR_PRINT("fs_cleanup - Run file system cleanup\n");
-      SOAR_PRINT("h        - Show this help\n\n");
+      SOAR_PRINT("sysinfo   - System information\n");
+      SOAR_PRINT("sysreset  - System reset\n");
+#if (configGENERATE_RUN_TIME_STATS == 1)
+      SOAR_PRINT("profile   - Start CPU/stack profiler\n");
+#endif
+      SOAR_PRINT("rs485_tx  - Send test RS485 load-cell packet (1234g)\n");
+      SOAR_PRINT("nau_read  - Single NAU7802 read\n");
+      SOAR_PRINT("nau_stat  - NAU7802 status\n");
+      SOAR_PRINT("nau_drdy  - NAU7802 DRDY check\n");
+      SOAR_PRINT("nau_on    - Enable NAU7802 polling\n");
+      SOAR_PRINT("nau_off   - Suspend NAU7802 polling\n");
+      SOAR_PRINT("nau_tog   - Toggle NAU7802 polling\n");
+      SOAR_PRINT("nau_log   - Enable continuous NAU7802 log + RS485 TX\n");
+      SOAR_PRINT("nau_nolog - Disable continuous NAU7802 log\n");
+      SOAR_PRINT("nau_tare  - Tare NAU7802\n");
+      SOAR_PRINT("nau_c500  - Calibrate 500g point\n");
+      SOAR_PRINT("nau_c1000 - Calibrate 1000g point\n");
+      SOAR_PRINT("nau_g1    - Set gain 1x (also nau_g2/4/8/128)\n");
+      SOAR_PRINT("h         - Show this help\n\n");
       break;
     default:
       SOAR_PRINT("Debug, unknown command: %s (type 'h' for help)\n", msg);
