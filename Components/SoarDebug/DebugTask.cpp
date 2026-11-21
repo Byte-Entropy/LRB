@@ -183,9 +183,10 @@ void DebugTask::HandleDebugMessage(const char *msg)
                TICKS_TO_MS(xTaskGetTickCount()));
   }
 	#if (configGENERATE_RUN_TIME_STATS == 1)  // enable profiling commands if profiling enabled
-	  else if (strcmp(msg, "profile") == 0) {
+//	  else if (strcmp(msg, "profile") == 0) {
+  	  else if (strcmp(msg, "top") == 0) {
 		profileSystem = true;
-	  } else if (strcmp(msg, "stop profiling") == 0) {
+	  } else if (strcmp(msg, "topq") == 0) {
 		profileSystem = false;
 	  }
 	#endif
@@ -199,7 +200,10 @@ void DebugTask::HandleDebugMessage(const char *msg)
       SOAR_PRINT("sysinfo   - System information\n");
       SOAR_PRINT("sysreset  - System reset\n");
 #if (configGENERATE_RUN_TIME_STATS == 1)
-      SOAR_PRINT("profile   - Start CPU/stack profiler\n");
+//      SOAR_PRINT("profile   - Start CPU/stack profiler\n");
+      SOAR_PRINT("top   	- Start CPU/stack profiler\n");
+//      SOAR_PRINT("stop profiling - Stop CPU/stack profiler\n");
+      SOAR_PRINT("topq 		- Stop CPU/stack profiler\n");
 #endif
       SOAR_PRINT("rs485_tx  - Send test RS485 load-cell packet (1234g)\n");
       SOAR_PRINT("nau_read  - Single NAU7802 read\n");
